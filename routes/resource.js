@@ -15,7 +15,7 @@ const multer = require("multer");
 require("dotenv").config();
 
 const upload = multer({ dest: "uploads/" });
-const { ACTIVE } = require("../utils/constants");
+const { ACTIVE, USER, IN_ACTIVE } = require("../utils/constants");
 router.post("/", loginMiddleware, async (req, res) => {
     const {
         category,
@@ -195,4 +195,17 @@ router.put("/:resourceId", loginMiddleware, async (req, res) => {
     return res.status(200).json(savedResource);
 });
 
+router.delete("/:resourceId", loginMiddleware, async(req, res)=> {
+    try {
+        console.log(req.user);
+        if (req.user.role !== USER) {
+            throw new BadRequest("Not allowed to delete");
+        }
+        await Resource.findByIdAndUpdate(req.params.resourceId, {status: IN_ACTIVE});
+        await User.findByIdAndUpdate(req.user._id, { $pull: {"resources": req.params.resourceId}});
+        return res.status(200).json("Resource deleted successfully");
+    } catch(err) {
+        console.log(err);
+    }
+})
 module.exports = router;
