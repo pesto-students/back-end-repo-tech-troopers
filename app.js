@@ -6,9 +6,11 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const handleErrors = require("./middlewares/handleErrors");
 const connectDB = require("./config/database");
-var usersRouter = require("./routes/users");
-var authRouter = require("./routes/auth");
-// const questionRouter = require("./routes/questions");
+const usersRouter = require("./routes/users");
+const authRouter = require("./routes/auth");
+const resourceRouter =  require("./routes/resource");
+
+
 var app = express();
 const port = process.env.PORT || 8000;
 connectDB();
@@ -22,7 +24,7 @@ app.use(cookieParser());
 
 app.use("/api/users", usersRouter);
 app.use("/api/auth", authRouter);
-// app.use("/api/question", questionRouter);
+app.use("/api/resource", resourceRouter);
 
 // serve static assests in production
 if (process.env.NODE_ENV === "production") {

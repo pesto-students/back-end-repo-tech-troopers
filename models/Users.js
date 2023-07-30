@@ -34,7 +34,7 @@ const UserSchema = new mongoose.Schema({
     resources: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "userquestion",
+            ref: "resource",
             required: false
         },
     ],

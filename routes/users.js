@@ -15,7 +15,6 @@ router.get("/", function (req, res, next) {
 //Register users
 router.post("/", async (req, res, next) => {
     const { email, password, password2, name, role, address } = req.body;
-    const { addressLine1, city, state, pinCode } = address;
     try {
         let user = await User.findOne({ email });
         if (user) {
@@ -24,25 +23,28 @@ router.post("/", async (req, res, next) => {
         if (password !== password2) {
             throw new BadRequest("Password do not match");
         }
-        if (checkForInvalid(addressLine1) || checkForInvalid(city) || checkForInvalid(state) || checkForInvalid(pinCode)) {
-            
-            if (checkForInvalid(addressLine1)) {
-                throw new BadRequest(`Address is required.`)
-            }
+        if (address) {
+            const { addressLine1, city, state, pinCode } = address;
 
-            if (checkForInvalid(city)) {
-                throw new BadRequest(`City is required.`)
-            }
+            if (checkForInvalid(addressLine1) || checkForInvalid(city) || checkForInvalid(state) || checkForInvalid(pinCode)) {
 
-            if (checkForInvalid(state)) {
-                throw new BadRequest(`State is required.`)
-            }
+                if (checkForInvalid(addressLine1)) {
+                    throw new BadRequest(`Address is required.`)
+                }
 
-            if (checkForInvalid(pinCode)) {
-                throw new BadRequest(`Pincode is required.`)
+                if (checkForInvalid(city)) {
+                    throw new BadRequest(`City is required.`)
+                }
+
+                if (checkForInvalid(state)) {
+                    throw new BadRequest(`State is required.`)
+                }
+
+                if (checkForInvalid(pinCode)) {
+                    throw new BadRequest(`Pincode is required.`)
+                }
             }
         }
-        console.log(req.body, city);
         user = new User({
             email,
             password,
@@ -66,9 +68,6 @@ router.post("/", async (req, res, next) => {
 });
 
 const checkForInvalid = (val) => {
-    if (Boolean(val) == false) {
-        return true;
-    }
-    return false;
+    return Boolean(val) ? false : true;
 }
 module.exports = router;
