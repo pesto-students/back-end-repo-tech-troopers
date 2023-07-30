@@ -80,6 +80,7 @@ router.post("/upload",loginMiddleware, upload.array("image"),async (req,res)=>{
     }
 })
 
+// list api
 
 
 module.exports = router;
