@@ -12,9 +12,9 @@ require("dotenv").config();
 
 const upload = multer({ dest: "uploads/" });
 const { ACTIVE } = require("../utils/constants");
-router.post('/', loginMiddleware,async (req, res) => {
+router.post('/', loginMiddleware, async (req, res) => {
     const { category, imagePath, description, status, phoneNumber, email, address } = req.body;
-    if(!Boolean(imagePath)) {
+    if (!Boolean(imagePath)) {
         throw new BadRequest("Image path is required");
     }
     if (!Boolean(description)) {
@@ -66,21 +66,44 @@ router.post('/', loginMiddleware,async (req, res) => {
         address: savedAddress._id,
         imageId
     }
-    
-    const savedResource = await Resource.create(resource); 
-    await User.findByIdAndUpdate(req.user._id, {"$push": {resources: savedResource._id}});
+
+    const savedResource = await Resource.create(resource);
+    await User.findByIdAndUpdate(req.user._id, { "$push": { resources: savedResource._id } });
     return res.status(201).json(savedResource);
 });
 
-router.post("/upload",loginMiddleware, upload.array("image"),async (req,res)=>{
+router.post("/upload", loginMiddleware, upload.array("image"), async (req, res) => {
     try {
-    return res.status(201).json({path: req.files[0].path});
-    } catch(err) {
+        return res.status(201).json({ path: req.files[0].path });
+    } catch (err) {
         console.log(err);
     }
 })
 
-// list api
+router.get("/", async (req, res) => {
+    try {
+        let page = req.query.page;
+        let limit = req.query.limit;
+
+        if (!page) {
+            page = 1
+        }
+        if (!limit) {
+            limit = 10
+        }
+        const resourceList = await Resource.find({status: ACTIVE}).limit(limit * 1).skip((page - 1) * limit).exec();
+        const totalCount = await Resource.countDocuments();
+
+        return res.status(200).json({
+            resourceList,
+            totalPages: Math.ceil(totalCount / limit),
+            currentPage: page
+        });
+    } catch (err) {
+        console.log(err);
+    }
+})
+
 
 
 module.exports = router;
