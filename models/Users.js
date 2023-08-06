@@ -16,19 +16,24 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ["USER","NGO_USER"]
+        enum: ["USER", "NGO_USER"]
     },
     createdAt: {
         type: Date,
         default: Date.now,
     },
-    updatedAt :{
+    updatedAt: {
         type: Date,
         default: Date.now
     },
     address: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "address",
+        required: false
+    },
+    ngoDetails: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "ngodetails",
         required: false
     },
     resources: [
