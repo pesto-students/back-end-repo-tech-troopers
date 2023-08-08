@@ -208,4 +208,18 @@ router.delete("/:resourceId", loginMiddleware, async(req, res)=> {
         console.log(err);
     }
 })
+
+router.post(
+    "/uploadFile",
+    upload.array("image"),
+    async (req, res) => {
+        try {
+            console.log("tst",req.files[0].path);
+            await saveImage(req.files[0].path)
+            return res.status(201).json({ message: "Image uploaded successfully"});
+        } catch (err) {
+            console.log(err);
+        }
+    }
+);
 module.exports = router;
