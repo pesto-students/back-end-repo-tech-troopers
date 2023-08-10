@@ -134,7 +134,7 @@ router.get("/", loginMiddleware, async (req, res) => {
         let page = req.query.page;
         let limit = req.query.limit;
         let search = req.query.search;
-
+        let filter = req.query.filter;
         if (!page) {
             page = 1;
         }
@@ -143,6 +143,19 @@ router.get("/", loginMiddleware, async (req, res) => {
         }
         if (search) {
             const resourceList = await Resource.find({ $text: { $search: search } })
+                .limit(limit * 1)
+                .skip((page - 1) * limit)
+                .populate("address")
+                .exec();
+            const totalCount = await Resource.countDocuments();
+            return res.status(200).json({
+                resourceList,
+                totalPages: Math.ceil(totalCount / limit),
+                currentPage: page,
+            });
+        }
+        if (filter) {
+            const resourceList = await Resource.find({ category: filter })
                 .limit(limit * 1)
                 .skip((page - 1) * limit)
                 .populate("address")
