@@ -104,12 +104,26 @@ router.get("/", loginMiddleware, async (req, res) => {
     try {
         let page = req.query.page;
         let limit = req.query.limit;
+        let search = req.query.search;
 
         if (!page) {
             page = 1;
         }
         if (!limit) {
             limit = 10;
+        }
+        if (search) {
+            const resourceList = await Resource.find({ $text: { $search: search } })
+                .limit(limit * 1)
+                .skip((page - 1) * limit)
+                .populate("address")
+                .exec();
+            const totalCount = await Resource.countDocuments();
+            return res.status(200).json({
+                resourceList,
+                totalPages: Math.ceil(totalCount / limit),
+                currentPage: page,
+            });
         }
         const resourceList = await Resource.find({ status: ACTIVE })
             .limit(limit * 1)
@@ -128,7 +142,7 @@ router.get("/", loginMiddleware, async (req, res) => {
     }
 });
 
-router.put("/:resourceId", loginMiddleware, async (req, res) => { 
+router.put("/:resourceId", loginMiddleware, async (req, res) => {
     const {
         category,
         imagePath,
@@ -180,7 +194,7 @@ router.put("/:resourceId", loginMiddleware, async (req, res) => {
     }
     const resourceData = await Resource.findById(req.params.resourceId);
     const addressId = resourceData.address;
-    await Address.findByIdAndUpdate(addressId,address);
+    await Address.findByIdAndUpdate(addressId, address);
     const resource = {
         category,
         description,
@@ -195,16 +209,16 @@ router.put("/:resourceId", loginMiddleware, async (req, res) => {
     return res.status(200).json(savedResource);
 });
 
-router.delete("/:resourceId", loginMiddleware, async(req, res)=> {
+router.delete("/:resourceId", loginMiddleware, async (req, res) => {
     try {
         console.log(req.user);
         if (req.user.role !== USER) {
             throw new BadRequest("Not allowed to delete");
         }
-        await Resource.findByIdAndUpdate(req.params.resourceId, {status: IN_ACTIVE});
-        await User.findByIdAndUpdate(req.user._id, { $pull: {"resources": req.params.resourceId}});
+        await Resource.findByIdAndUpdate(req.params.resourceId, { status: IN_ACTIVE });
+        await User.findByIdAndUpdate(req.user._id, { $pull: { "resources": req.params.resourceId } });
         return res.status(200).json("Resource deleted successfully");
-    } catch(err) {
+    } catch (err) {
         console.log(err);
     }
 })
@@ -214,9 +228,9 @@ router.post(
     upload.array("image"),
     async (req, res) => {
         try {
-            console.log("tst",req.files[0].path);
+            console.log("tst", req.files[0].path);
             await saveImage(req.files[0].path)
-            return res.status(201).json({ message: "Image uploaded successfully"});
+            return res.status(201).json({ message: "Image uploaded successfully" });
         } catch (err) {
             console.log(err);
         }
