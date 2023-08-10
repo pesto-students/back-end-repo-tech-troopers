@@ -21,31 +21,31 @@ router.post("/", async (req, res, next) => {
         if (user) {
             throw new BadRequest("User already exits");
         }
-        // if (password !== confirmPassword) {
-        //     throw new BadRequest("Password do not match");
-        // }
-        // if (address) {
-        //     const { addressLine1, city, state, pinCode } = address;
+        if (password !== confirmPassword) {
+            throw new BadRequest("Password do not match");
+        }
+        if (address) {
+            const { addressLine1, city, state, pinCode } = address;
 
-        //     if (checkForInvalid(addressLine1) || checkForInvalid(city) || checkForInvalid(state) || checkForInvalid(pinCode)) {
+            if (checkForInvalid(addressLine1) || checkForInvalid(city) || checkForInvalid(state) || checkForInvalid(pinCode)) {
 
-        //         if (checkForInvalid(addressLine1)) {
-        //             throw new BadRequest(`Address is required.`)
-        //         }
+                if (checkForInvalid(addressLine1)) {
+                    throw new BadRequest(`Address is required.`)
+                }
 
-        //         if (checkForInvalid(city)) {
-        //             throw new BadRequest(`City is required.`)
-        //         }
+                if (checkForInvalid(city)) {
+                    throw new BadRequest(`City is required.`)
+                }
 
-        //         if (checkForInvalid(state)) {
-        //             throw new BadRequest(`State is required.`)
-        //         }
+                if (checkForInvalid(state)) {
+                    throw new BadRequest(`State is required.`)
+                }
 
-        //         if (checkForInvalid(pinCode)) {
-        //             throw new BadRequest(`Pincode is required.`)
-        //         }
-        //     }
-        // }
+                if (checkForInvalid(pinCode)) {
+                    throw new BadRequest(`Pincode is required.`)
+                }
+            }
+        }
         user = new User({
             email,
             password,
@@ -59,7 +59,7 @@ router.post("/", async (req, res, next) => {
         const savedUser = await user.save();
         // user.address = address;
         const payload = { user: { id: savedUser._id } };
-        const token = jwt.sign(payload, "secrettt", {
+        const token = jwt.sign(payload, process.env.JWTSECRET, {
             expiresIn: 36000,
         });
         delete savedUser["password"]
