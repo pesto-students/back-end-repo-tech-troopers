@@ -134,12 +134,26 @@ router.get("/", loginMiddleware, async (req, res) => {
     try {
         let page = req.query.page;
         let limit = req.query.limit;
+        let search = req.query.search;
 
         if (!page) {
             page = 1;
         }
         if (!limit) {
             limit = 10;
+        }
+        if (search) {
+            const resourceList = await Resource.find({ $text: { $search: search } })
+                .limit(limit * 1)
+                .skip((page - 1) * limit)
+                .populate("address")
+                .exec();
+            const totalCount = await Resource.countDocuments();
+            return res.status(200).json({
+                resourceList,
+                totalPages: Math.ceil(totalCount / limit),
+                currentPage: page,
+            });
         }
         const resourceList = await Resource.find({ status: ACTIVE })
             .limit(limit * 1)
