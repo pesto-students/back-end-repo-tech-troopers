@@ -8,8 +8,9 @@ const handleErrors = require("./middlewares/handleErrors");
 const connectDB = require("./config/database");
 const usersRouter = require("./routes/users");
 const authRouter = require("./routes/auth");
-const resourceRouter = require("./routes/resource");
-
+const resourceRouter =  require("./routes/resource");
+const causesRouter = require("./routes/cause");
+const eventRouter =  require("./routes/event");
 
 var app = express();
 const port = process.env.PORT || 8000;
@@ -25,6 +26,8 @@ app.use(cookieParser());
 app.use("/api/users", usersRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/resource", resourceRouter);
+app.use("/api/causes", causesRouter);
+app.use("/api/event", eventRouter);
 
 // serve static assests in production
 if (process.env.NODE_ENV === "production") {

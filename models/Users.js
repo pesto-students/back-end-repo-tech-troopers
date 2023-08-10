@@ -43,6 +43,13 @@ const UserSchema = new mongoose.Schema({
             required: false
         },
     ],
+    events: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "event",
+            required: false
+        },
+    ],
 });
 
 module.exports = mongoose.model("user", UserSchema);
