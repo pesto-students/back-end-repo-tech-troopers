@@ -4,21 +4,22 @@ const fs = require("fs");
 require("dotenv").config();
 
 cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
+    cloud_name: "dffofqaks",
+    api_key: "979397193231618",
+    api_secret: "HKM9d45UVDzUFwco-R3RdOyzPHY"
 });
 
 const saveImage = async (imagePath) => {
     try {
         const uniqueId = crypto.randomBytes(16).toString("hex");
-        await cloudinary.uploader.upload(imagePath, { public_id: uniqueId });
+        const uploadResult = await cloudinary.uploader.upload(imagePath, { public_id: uniqueId });
         fs.unlink(imagePath, (err) => {
             if (err) {
                 console.error(err)
                 return
-            }});
-        return uniqueId;
+            }
+        });
+        return uploadResult.secure_url;
     } catch (err) {
         console.log(err);
     }

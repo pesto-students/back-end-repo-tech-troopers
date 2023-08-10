@@ -8,7 +8,7 @@ const handleErrors = require("./middlewares/handleErrors");
 const connectDB = require("./config/database");
 const usersRouter = require("./routes/users");
 const authRouter = require("./routes/auth");
-const resourceRouter =  require("./routes/resource");
+const resourceRouter = require("./routes/resource");
 
 
 var app = express();

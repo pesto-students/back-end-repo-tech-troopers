@@ -5,7 +5,6 @@ const bcrypt = require("bcryptjs");
 const { BadRequest } = require("../utils/errors");
 const User = require("../models/Users");
 const Address = require("../models/Address");
-const NGODetails = require("../models/NGODetails");
 require("dotenv").config();
 /* GET users listing. */
 router.get("/", function (req, res, next) {
@@ -15,60 +14,62 @@ router.get("/", function (req, res, next) {
 
 //Register users
 router.post("/", async (req, res, next) => {
-    const { email, password, confirmPassword, name, role, address } = req.body;
+    const { email, password, password2, name, role, address } = req.body;
     try {
         let user = await User.findOne({ email });
         if (user) {
             throw new BadRequest("User already exits");
         }
-        // if (password !== confirmPassword) {
-        //     throw new BadRequest("Password do not match");
-        // }
-        // if (address) {
-        //     const { addressLine1, city, state, pinCode } = address;
+        if (password !== password2) {
+            throw new BadRequest("Password do not match");
+        }
+        if (address) {
+            const { addressLine1, city, state, pinCode } = address;
 
-        //     if (checkForInvalid(addressLine1) || checkForInvalid(city) || checkForInvalid(state) || checkForInvalid(pinCode)) {
+            if (checkForInvalid(addressLine1) || checkForInvalid(city) || checkForInvalid(state) || checkForInvalid(pinCode)) {
 
-        //         if (checkForInvalid(addressLine1)) {
-        //             throw new BadRequest(`Address is required.`)
-        //         }
+                if (checkForInvalid(addressLine1)) {
+                    throw new BadRequest(`Address is required.`)
+                }
 
-        //         if (checkForInvalid(city)) {
-        //             throw new BadRequest(`City is required.`)
-        //         }
+                if (checkForInvalid(city)) {
+                    throw new BadRequest(`City is required.`)
+                }
 
-        //         if (checkForInvalid(state)) {
-        //             throw new BadRequest(`State is required.`)
-        //         }
+                if (checkForInvalid(state)) {
+                    throw new BadRequest(`State is required.`)
+                }
 
-        //         if (checkForInvalid(pinCode)) {
-        //             throw new BadRequest(`Pincode is required.`)
-        //         }
-        //     }
-        // }
+                if (checkForInvalid(pinCode)) {
+                    throw new BadRequest(`Pincode is required.`)
+                }
+            }
+        }
         user = new User({
             email,
             password,
             name,
             role,
         });
-        // const savedAddress = await Address.create(address);
+        const savedAddress = await Address.create(address);
         const salt = bcrypt.genSaltSync(10);
         user.password = await bcrypt.hash(password, salt);
-        // user.address = savedAddress._id;
+        user.address = savedAddress._id;
         const savedUser = await user.save();
-        // user.address = address;
+        user.address = address;
         const payload = { user: { id: savedUser._id } };
         const token = jwt.sign(payload, "secrettt", {
             expiresIn: 36000,
         });
-        delete savedUser["password"]
-        return res.status(200).json({ token, userInfo: savedUser });
+        return res.status(200).json({ token });
     } catch (err) {
         next(err);
     }
 });
 
+// ...
+
+// PATCH user details (e.g., update address and NGO details)
 router.patch("/:userId", async (req, res, next) => {
     console.log("here")
     const { userId } = req.params;
@@ -85,8 +86,8 @@ router.patch("/:userId", async (req, res, next) => {
             if (checkForInvalid(addressLine1) || checkForInvalid(city) || checkForInvalid(state) || checkForInvalid(pinCode)) {
                 throw new BadRequest("Invalid address details.");
             }
-            const updatedAddress = await Address.findByIdAndUpdate(user.address, address, { new: true });
-            user.address = new Address({ ...address });
+            // const updatedAddress = await Address.findByIdAndUpdate(user.address, address, { new: true });
+            user.address = address;
         }
 
         // Update NGO details if provided
@@ -95,9 +96,11 @@ router.patch("/:userId", async (req, res, next) => {
             if (checkForInvalid(ngoName) || checkForInvalid(registrationNumber) || checkForInvalid(typeOfNGO)) {
                 throw new BadRequest("Invalid NGO details.");
             }
-            user.ngoDetails = new NGODetails({
-                ...ngoDetails
-            });
+            user.ngoDetails = {
+                ngoName,
+                registrationNumber,
+                typeOfNGO,
+            };
         }
 
         const updatedUser = await user.save();
@@ -106,6 +109,9 @@ router.patch("/:userId", async (req, res, next) => {
         next(err);
     }
 });
+
+// ...
+
 
 const checkForInvalid = (val) => {
     return Boolean(val) ? false : true;
