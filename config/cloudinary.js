@@ -12,13 +12,14 @@ cloudinary.config({
 const saveImage = async (imagePath) => {
     try {
         const uniqueId = crypto.randomBytes(16).toString("hex");
-        await cloudinary.uploader.upload(imagePath, { public_id: uniqueId });
+        const uploadResult = await cloudinary.uploader.upload(imagePath, { public_id: uniqueId });
         fs.unlink(imagePath, (err) => {
             if (err) {
                 console.error(err)
                 return
-            }});
-        return uniqueId;
+            }
+        });
+        return uploadResult.secure_url;
     } catch (err) {
         console.log(err);
     }

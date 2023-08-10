@@ -1,11 +1,15 @@
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+    },
     category: {
         type: String,
         required: false,
     },
-    imageId: {
+    imageURL: {
         type: String,
         required: false,
     },
@@ -21,7 +25,7 @@ const UserSchema = new mongoose.Schema({
         type: Number,
         required: false
     },
-    email:{
+    email: {
         type: String,
         required: false
     },

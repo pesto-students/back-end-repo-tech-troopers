@@ -19,13 +19,13 @@ router.post("/", async (req, res, next) => {
         if (!isMatch) {
             throw new BadRequest("Password is wrong");
         }
-        user = {...user._doc};
+        user = { ...user._doc };
         delete user["password"]
         const payload = { user };
         const token = await jwt.sign(payload, process.env.JWTSECRET, {
             expiresIn: 36000,
         });
-        return res.status(200).json({ token });
+        return res.status(200).json({ userInfo: user, token });
     } catch (err) {
         next(err);
     }
