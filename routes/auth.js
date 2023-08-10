@@ -22,7 +22,7 @@ router.post("/", async (req, res, next) => {
         user = { ...user._doc };
         delete user["password"]
         const payload = { user };
-        const token = await jwt.sign(payload, "secrettt", {
+        const token = await jwt.sign(payload, process.env.JWTSECRET, {
             expiresIn: 36000,
         });
         return res.status(200).json({ userInfo: user, token });
