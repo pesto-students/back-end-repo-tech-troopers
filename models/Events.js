@@ -43,5 +43,9 @@ const UserSchema = new mongoose.Schema({
         ref: "user",
         required: false
     },
+    imageURL: {
+        type: String,
+        required: false,
+    },
 });
 module.exports = mongoose.model("event", UserSchema);

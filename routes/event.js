@@ -5,11 +5,15 @@ const Address = require("../models/Address");
 const Event = require("../models/Events");
 const { BadRequest } = require("../utils/errors");
 const loginMiddleware = require("../middlewares/auth");
+const { saveImage } = require("../config/cloudinary");
+const multer = require("multer");
 const {
     checkForInvalid,
 } = require("../utils/util");
+const upload = multer({ dest: "uploads/" });
+
 const { ACTIVE, IN_ACTIVE, NGO_USER, USER } = require("../utils/constants");
-router.post('/', loginMiddleware, async (req, res, next) => {
+router.post('/admin', loginMiddleware, async (req, res, next) => {
     try {
         const {
             title,
@@ -18,7 +22,8 @@ router.post('/', loginMiddleware, async (req, res, next) => {
             organizedBy,
             ngoName,
             date,
-            address
+            address,
+            imagePath,
         } = req.body;
 
         if (req.user.role !== NGO_USER) {
@@ -67,7 +72,10 @@ router.post('/', loginMiddleware, async (req, res, next) => {
             }
         }
         const savedAddress = await Address.create(address);
-
+        let imageURL = null;
+        if (imagePath) {
+            imageURL = await saveImage(imagePath);
+        }
         const newEvent = {
             title,
             description,
@@ -76,7 +84,8 @@ router.post('/', loginMiddleware, async (req, res, next) => {
             ngoName,
             date: new Date(date),
             address: savedAddress._id,
-            userId: req.user._id
+            userId: req.user._id,
+            imageURL: imageURL
         }
         const savedEvent = await Event.create(newEvent);
         await User.findByIdAndUpdate(req.user._id, {
@@ -147,7 +156,7 @@ router.get("/", loginMiddleware, async (req, res, next) => {
         next(err);
     }
 });
-router.put("/:eventId",loginMiddleware,async(req,res,next)=>{
+router.put("/admin/:eventId",loginMiddleware,async(req,res,next)=>{
     try{
         const {
             title,
@@ -229,4 +238,32 @@ router.put("/:eventId",loginMiddleware,async(req,res,next)=>{
     }
 });
 
+router.post(
+    "/admin/upload",
+    loginMiddleware,
+    upload.array("image"),
+    async (req, res, next) => {
+        try {
+            if (req.user.role !== NGO_USER) {
+                throw new BadRequest("You are not allowed");
+            }
+            return res.status(201).json({ path: req.files[0].path });
+        } catch (err) {
+            next(err);
+        }
+    }
+);
+
+router.delete("/admin/:eventId", loginMiddleware, async(req, res, next)=>{
+    try {
+        if (req.user.role !== NGO_USER) {
+            throw new BadRequest("You are not allowed");
+        }
+        const eventData = await Event.findById(req.params.eventId);
+        await User.findByIdAndUpdate(req.user._id, {$pull:{"events":req.params.eventId}});
+        return res.status(200).json("Event deleted successfully");
+    } catch(err) {
+        next(err)
+    }
+})
 module.exports = router;

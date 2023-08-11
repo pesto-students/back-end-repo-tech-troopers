@@ -16,76 +16,80 @@ require("dotenv").config();
 
 const upload = multer({ dest: "uploads/" });
 const { ACTIVE, USER, IN_ACTIVE } = require("../utils/constants");
-router.post("/", loginMiddleware, async (req, res) => {
-    const {
-        category,
-        imageURL,
-        description,
-        phoneNumber,
-        email,
-        address,
-        name
-    } = req.body;
-    if (!Boolean(description)) {
-        throw new BadRequest("Description is required");
-    }
-    if (!Boolean(phoneNumber)) {
-        throw new BadRequest("Phone Number is required");
-    }
-    if (!phoneNumberValidation(phoneNumber)) {
-        throw new BadRequest("Enter valid phone number");
-    }
-    if (!Boolean(email)) {
-        throw new BadRequest("Email is required");
-    }
-    if (!emailValidation(email)) {
-        throw new BadRequest("Enter valid email");
-    }
-    if (address) {
-        const { addressLine1, city, state, pinCode } = address;
+router.post("/", loginMiddleware, async (req, res, next) => {
+    try {
+        const {
+            category,
+            imageURL,
+            description,
+            phoneNumber,
+            email,
+            address,
+            name
+        } = req.body;
+        if (!Boolean(description)) {
+            throw new BadRequest("Description is required");
+        }
+        if (!Boolean(phoneNumber)) {
+            throw new BadRequest("Phone Number is required");
+        }
+        if (!phoneNumberValidation(phoneNumber)) {
+            throw new BadRequest("Enter valid phone number");
+        }
+        if (!Boolean(email)) {
+            throw new BadRequest("Email is required");
+        }
+        if (!emailValidation(email)) {
+            throw new BadRequest("Enter valid email");
+        }
+        if (address) {
+            const { addressLine1, city, state, pinCode } = address;
 
-        if (
-            checkForInvalid(addressLine1) ||
-            checkForInvalid(city) ||
-            checkForInvalid(state) ||
-            checkForInvalid(pinCode)
-        ) {
-            if (checkForInvalid(addressLine1)) {
-                throw new BadRequest(`Address is required.`);
-            }
+            if (
+                checkForInvalid(addressLine1) ||
+                checkForInvalid(city) ||
+                checkForInvalid(state) ||
+                checkForInvalid(pinCode)
+            ) {
+                if (checkForInvalid(addressLine1)) {
+                    throw new BadRequest(`Address is required.`);
+                }
 
-            if (checkForInvalid(city)) {
-                throw new BadRequest(`City is required.`);
-            }
+                if (checkForInvalid(city)) {
+                    throw new BadRequest(`City is required.`);
+                }
 
-            if (checkForInvalid(state)) {
-                throw new BadRequest(`State is required.`);
-            }
+                if (checkForInvalid(state)) {
+                    throw new BadRequest(`State is required.`);
+                }
 
-            if (checkForInvalid(pinCode)) {
-                throw new BadRequest(`Pincode is required.`);
+                if (checkForInvalid(pinCode)) {
+                    throw new BadRequest(`Pincode is required.`);
+                }
             }
         }
-    }
-    const savedAddress = await Address.create(address);
-    // const imageId = await saveImage(imagePath);
-    const resource = {
-        category,
-        description,
-        status: ACTIVE,
-        phoneNumber,
-        email,
-        userId: req.user._id,
-        address: savedAddress._id,
-        name,
-        imageURL,
-    };
+        const savedAddress = await Address.create(address);
+        // const imageId = await saveImage(imagePath);
+        const resource = {
+            category,
+            description,
+            status: ACTIVE,
+            phoneNumber,
+            email,
+            userId: req.user._id,
+            address: savedAddress._id,
+            name,
+            imageURL,
+        };
 
-    const savedResource = await Resource.create(resource);
-    await User.findByIdAndUpdate(req.user._id, {
-        $push: { resources: savedResource._id },
-    });
-    return res.status(201).json({ message: "successful" });
+        const savedResource = await Resource.create(resource);
+        await User.findByIdAndUpdate(req.user._id, {
+            $push: { resources: savedResource._id },
+        });
+        return res.status(201).json({ message: "successful" });
+    } catch (err) {
+        next(err)
+    }
 });
 
 router.post(
