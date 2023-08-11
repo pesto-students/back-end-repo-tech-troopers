@@ -112,4 +112,57 @@ router.get("/", loginMiddleware, async (req, res, next) => {
     }
 });
 
+router.put("/admin/:causeId", loginMiddleware, async (req, res, next) => {
+    try {
+        const {
+            name,
+            description,
+            amount,
+            imagePath
+        } = req.body;
+
+        if (req.user.role !== NGO_USER) {
+            throw new BadRequest("You are not allowed");
+        }
+        if (!Boolean(name)) {
+            throw new BadRequest("Name is required");
+        }
+        if (!Boolean(description)) {
+            throw new BadRequest("Description is required");
+        }
+        if (!Boolean(amount)) {
+            throw new BadRequest("Amount is required");
+        }
+
+        let causeData = await Cause.findById(req.params.causeId);
+        if (!causeData) {
+            throw new BadRequest("Cause not found");
+        }
+    
+        causeData.name = name;
+        causeData.description = description;
+        causeData.amount = amount;
+        if (imagePath) {
+            causeData.imageURL = await saveImage(imagePath);
+        }
+        await causeData.save(); 
+
+        return res.status(200).json({ message: "Successfully update a cause" });
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.delete("/admin/:causeId", loginMiddleware, async(req, res, next)=>{
+    try {
+        if (req.user.role !== NGO_USER) {
+            throw new BadRequest("You are not allowed");
+        }
+        await Cause.findByIdAndDelete(req.params.causeId);
+        await User.findByIdAndUpdate(req.user._id, {$pull:{"causes":req.params.causeId}});
+        return res.status(200).json("Cause deleted successfully");
+    } catch(err) {
+        next(err)
+    }
+})
 module.exports = router;

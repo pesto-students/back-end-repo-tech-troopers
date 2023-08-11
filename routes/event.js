@@ -260,7 +260,7 @@ router.delete("/admin/:eventId", loginMiddleware, async(req, res, next)=>{
         if (req.user.role !== NGO_USER) {
             throw new BadRequest("You are not allowed");
         }
-        const eventData = await Event.findById(req.params.eventId);
+        await Event.findByIdAndDelete(req.params.eventId);
         await User.findByIdAndUpdate(req.user._id, {$pull:{"events":req.params.eventId}});
         return res.status(200).json("Event deleted successfully");
     } catch(err) {
