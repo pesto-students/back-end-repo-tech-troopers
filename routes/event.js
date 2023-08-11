@@ -8,7 +8,7 @@ const loginMiddleware = require("../middlewares/auth");
 const {
     checkForInvalid,
 } = require("../utils/util");
-const { ACTIVE, IN_ACTIVE, NGO_USER } = require("../utils/constants");
+const { ACTIVE, IN_ACTIVE, NGO_USER, USER } = require("../utils/constants");
 router.post('/', loginMiddleware, async (req, res, next) => {
     try {
         const {
@@ -88,7 +88,7 @@ router.post('/', loginMiddleware, async (req, res, next) => {
     }
 });
 
-router.get("/", loginMiddleware, async (req, res, next) => {
+router.get("/admin", loginMiddleware, async (req, res, next) => {
     try {
         if (req.user.role !== NGO_USER) {
             throw new BadRequest("You are not allowed");
@@ -118,6 +118,35 @@ router.get("/", loginMiddleware, async (req, res, next) => {
     }
 });
 
+router.get("/", loginMiddleware, async (req, res, next) => {
+    try {
+        if (req.user.role !== USER) {
+            throw new BadRequest("You are not allowed");
+        }
+        let page = req.query.page;
+        let limit = req.query.limit;
+
+        if (!page) {
+            page = 1;
+        }
+        if (!limit) {
+            limit = 10;
+        }
+        const eventList = await Event.find()
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
+            .populate("address")
+            .exec();
+        const totalCount = await Event.countDocuments();
+        return res.status(200).json({
+            eventList,
+            totalPages: Math.ceil(totalCount / limit),
+            currentPage: page,
+        });
+    } catch (err) {
+        next(err);
+    }
+});
 router.put("/:eventId",loginMiddleware,async(req,res,next)=>{
     try{
         const {
@@ -198,5 +227,6 @@ router.put("/:eventId",loginMiddleware,async(req,res,next)=>{
     }catch(err){
         next(err);
     }
-})
+});
+
 module.exports = router;
