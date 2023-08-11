@@ -2,12 +2,15 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/Users");
 const Cause = require("../models/Cause");
+const Donation = require("../models/Donation");
 const { BadRequest } = require("../utils/errors");
 const loginMiddleware = require("../middlewares/auth");
 const { saveImage } = require("../config/cloudinary");
 const multer = require("multer");
 const {
     checkForInvalid,
+    phoneNumberValidation,
+    emailValidation
 } = require("../utils/util");
 const upload = multer({ dest: "uploads/" });
 
@@ -163,6 +166,26 @@ router.delete("/admin/:causeId", loginMiddleware, async(req, res, next)=>{
         return res.status(200).json("Cause deleted successfully");
     } catch(err) {
         next(err)
+    }
+});
+
+router.post("/donation/:causerId", async(req, res, next)=>{
+    try {
+        let { name,
+            email,
+            phone,
+            amount
+        } = req.body;
+        if(phone && phoneNumberValidation(phone)) {
+            throw new BadRequest("Invalid phone number");
+        }
+        if(email && !emailValidation(email)) {
+            throw new BadRequest("Email is not valid");
+        }
+        await Donation.create({name, email,phone,amount,causeId:req.params.causerId });
+        return res.status(200).json({message: "Successfull donation made"});
+    }catch(err) {
+        next(err);
     }
 })
 module.exports = router;

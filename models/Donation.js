@@ -1,33 +1,31 @@
 const mongoose = require("mongoose");
 
-const CausesSchema = new mongoose.Schema({
+const DonationSchema = new mongoose.Schema({
     name: {
         type: String,
         required: false,
     },
-    imageURL: {
+    email: {
         type: String,
         required: false,
     },
-    description: {
+    phone: {
         type: String,
         required: false,
     },
     amount: {
         type: Number,
         required: false,
-        default:0
     },
-    calculatedAmount: {
-        type: Number,
-        required: false,
-        default: 0
+    transactionId: {
+        type: String,
+        require: false
     },
-    userId: {
+    causeId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "user",
+        ref: "cause",
         required: false
-    },
+    }
 });
 
-module.exports = mongoose.model("cause", CausesSchema);
+module.exports = mongoose.model("donation", DonationSchema);
