@@ -54,4 +54,62 @@ router.post('/admin', loginMiddleware, async (req, res, next) => {
     }
 });
 
+router.get("/admin", loginMiddleware, async (req, res, next) => {
+    try {
+        if (req.user.role !== NGO_USER) {
+            throw new BadRequest("You are not allowed");
+        }
+        let page = req.query.page;
+        let limit = req.query.limit;
+
+        if (!page) {
+            page = 1;
+        }
+        if (!limit) {
+            limit = 10;
+        }
+        const causeList = await Cause.find({ userId: req.user._id  })
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
+            .exec();
+        const totalCount = await Cause.countDocuments();
+        return res.status(200).json({
+            causeList,
+            totalPages: Math.ceil(totalCount / limit),
+            currentPage: page,
+        });
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.get("/", loginMiddleware, async (req, res, next) => {
+    try {
+        if (req.user.role !== USER ) {
+            throw new BadRequest("You are not allowed");
+        }
+        let page = req.query.page;
+        let limit = req.query.limit;
+
+        if (!page) {
+            page = 1;
+        }
+        if (!limit) {
+            limit = 10;
+        }
+        const causeList = await Cause.find()
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
+            .exec();
+        const totalCount = await Cause.countDocuments();
+        return res.status(200).json({
+            causeList,
+            totalPages: Math.ceil(totalCount / limit),
+            currentPage: page,
+        });
+    } catch (err) {
+        next(err);
+    }
+});
+
 module.exports = router;
