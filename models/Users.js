@@ -50,6 +50,13 @@ const UserSchema = new mongoose.Schema({
             required: false
         },
     ],
+    causes: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "cause",
+            required: false
+        },
+    ],
 });
 
 module.exports = mongoose.model("user", UserSchema);

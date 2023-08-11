@@ -13,6 +13,7 @@ const {
 const upload = multer({ dest: "uploads/" });
 
 const { ACTIVE, IN_ACTIVE, NGO_USER, USER } = require("../utils/constants");
+
 router.post('/admin', loginMiddleware, async (req, res, next) => {
     try {
         const {

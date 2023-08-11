@@ -5,7 +5,7 @@ const CausesSchema = new mongoose.Schema({
         type: String,
         required: false,
     },
-    imageUrl: {
+    imageURL: {
         type: String,
         required: false,
     },
@@ -16,7 +16,12 @@ const CausesSchema = new mongoose.Schema({
     amount: {
         type: Number,
         required: false
-    }
+    },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+        required: false
+    },
 });
 
 module.exports = mongoose.model("cause", CausesSchema);

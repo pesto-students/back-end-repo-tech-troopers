@@ -9,7 +9,7 @@ const connectDB = require("./config/database");
 const usersRouter = require("./routes/users");
 const authRouter = require("./routes/auth");
 const resourceRouter =  require("./routes/resource");
-const causesRouter = require("./routes/cause");
+const causeRouter = require("./routes/cause");
 const eventRouter =  require("./routes/event");
 
 var app = express();
@@ -26,7 +26,7 @@ app.use(cookieParser());
 app.use("/api/users", usersRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/resource", resourceRouter);
-app.use("/api/causes", causesRouter);
+app.use("/api/cause", causeRouter);
 app.use("/api/event", eventRouter);
 
 // serve static assests in production
