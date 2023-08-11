@@ -4,7 +4,8 @@
   "description": "Pesto project",
   "main": "app.js",
   "scripts": {
-    "start": "NODE_ENV=development nodemon app.js"
+    "start:dev": "NODE_ENV=development nodemon app.js",
+    "start":"node app.js"
   },
   "author": "",
   "license": "ISC",

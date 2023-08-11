@@ -179,7 +179,7 @@ router.post("/donation/:causerId", async(req, res, next)=>{
         if(phone && phoneNumberValidation(phone)) {
             throw new BadRequest("Invalid phone number");
         }
-        if(email && !emailValidation(email)) {
+            if(email && !emailValidation(email)) {
             throw new BadRequest("Email is not valid");
         }
         await Donation.create({name, email,phone,amount,causeId:req.params.causerId });
