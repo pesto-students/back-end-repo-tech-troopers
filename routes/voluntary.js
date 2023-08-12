@@ -232,4 +232,17 @@ router.patch("/remove/:voluntaryId", loginMiddleware, async (req, res, next) => 
         next(err);
     }
 });
+
+router.delete("/admin/:voluntaryId", loginMiddleware, async(req, res, next)=>{
+    try {
+        if (req.user.role !== NGO_USER) {
+            throw new BadRequest("You are not allowed");
+        }
+        await Voluntary.findByIdAndDelete(req.params.voluntaryId);
+        await User.findByIdAndUpdate(req.user._id, { $pull: { voluntary: req.params.voluntaryId } });
+        return res.status(200).json("Task deleted successfully");
+    } catch(err) {
+        next(err);
+    }
+})
 module.exports = router;
