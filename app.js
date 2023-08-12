@@ -11,6 +11,7 @@ const authRouter = require("./routes/auth");
 const resourceRouter =  require("./routes/resource");
 const causeRouter = require("./routes/cause");
 const eventRouter =  require("./routes/event");
+const voluntaryRouter =  require("./routes/voluntary");
 
 var app = express();
 const port = process.env.PORT || 8000;
@@ -28,6 +29,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/resource", resourceRouter);
 app.use("/api/cause", causeRouter);
 app.use("/api/event", eventRouter);
+app.use("/api/voluntary", voluntaryRouter);
 
 // serve static assests in production
 if (process.env.NODE_ENV === "production") {

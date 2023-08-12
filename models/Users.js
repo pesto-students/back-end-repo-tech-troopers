@@ -57,6 +57,13 @@ const UserSchema = new mongoose.Schema({
             required: false
         },
     ],
+    voluntary: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "voluntary",
+            required: false
+        }
+    ]
 });
 
 module.exports = mongoose.model("user", UserSchema);
