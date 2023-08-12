@@ -26,10 +26,9 @@ const VoluntarySchema = new mongoose.Schema({
         required: false
     }],
     insterestedUsers: [{
-        userId: mongoose.Schema.Types.ObjectId,
-        name: String,
-        phone: Number,
-        email: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+        required: false
     }],
     createdAt: {
         type: Date,

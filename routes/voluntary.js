@@ -96,6 +96,7 @@ router.get('/admin', loginMiddleware, async(req, res, next)=>{
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .populate("ngoDetailId")
+            .populate({ path:"insterestedUsers", select:"name email phoneNumber"})
             .exec();
         const totalCount = await Voluntary.countDocuments();
         return res.status(200).json({
@@ -206,5 +207,29 @@ router.put("/admin/:voluntaryId", loginMiddleware, async(req, res, next)=>{
     }
 });
 
+router.patch("/add/:voluntaryId", loginMiddleware, async(req, res, next)=>{
+    try{
+        if (req.user.role !== USER) {
+            throw new BadRequest("You are not allowed");
+        }
+        await Voluntary.findByIdAndUpdate(req.params.voluntaryId,{ $push: {insterestedUsers: req.user._id}});
+        await User.findByIdAndUpdate(req.user._id, { $push: {voluntary:req.params.voluntaryId}});
+        return res.status(201).json({message: "Successfully recored your interest."})
+    } catch(err){
+        next(err);
+    }
+});
 
+router.patch("/remove/:voluntaryId", loginMiddleware, async (req, res, next) => {
+    try {
+        if (req.user.role !== USER) {
+            throw new BadRequest("You are not allowed");
+        }
+        await Voluntary.findByIdAndUpdate(req.params.voluntaryId, { $pull: { insterestedUsers: req.user._id }});
+        await User.findByIdAndUpdate(req.user._id, { $pull: { voluntary: req.params.voluntaryId } });
+        return res.status(201).json({ message: "Successfully removed your interest." })
+    } catch (err) {
+        next(err);
+    }
+});
 module.exports = router;
