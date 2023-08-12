@@ -5,7 +5,7 @@ const NGODetails = require("../models/NGODetails");
 const Voluntary = require("../models/Voluntary");
 const { BadRequest } = require("../utils/errors");
 const loginMiddleware = require("../middlewares/auth");
-const { ACCEPTED, ACTIVE, NGO_USER, USER } = require("../utils/constants");
+const { NGO_USER, USER } = require("../utils/constants");
 router.post("/admin", loginMiddleware, async (req, res, next) => {
     try {
         const {
@@ -45,9 +45,6 @@ router.post("/admin", loginMiddleware, async (req, res, next) => {
         if (!Boolean(ageGroup2)) {
             throw new BadRequest("ageGroup2 is required");
         }
-        if (!Boolean(timeCommitment)) {
-            throw new BadRequest("Time commitment is required");
-        }
         if (!Boolean(ngoName)) {
             throw new BadRequest("NGO name is required");
         }
@@ -67,7 +64,7 @@ router.post("/admin", loginMiddleware, async (req, res, next) => {
             title,
             category,
             description,
-            status: status == ACTIVE ? ACTIVE : ACCEPTED,
+            status: status,
             timeCommitment,
             ageGroup: [ageGroup1, ageGroup2],
             ngoDetailId: ngoDetailData._id,
@@ -140,5 +137,74 @@ router.get('/', loginMiddleware, async (req, res, next) => {
         next(err);
     }
 });
+
+router.put("/admin/:voluntaryId", loginMiddleware, async(req, res, next)=>{
+    try {
+        const {
+            title,
+            category,
+            description,
+            status,
+            timeCommitment,
+            ageGroup1,
+            ageGroup2,
+            ngoName,
+            registrationNumber,
+            typeOfNGO,
+        } = req.body;
+
+        if (req.user.role !== NGO_USER) {
+            throw new BadRequest("You are not allowed");
+        }
+        if (!Boolean(title)) {
+            throw new BadRequest("Title is required");
+        }
+        if (!Boolean(category)) {
+            throw new BadRequest("Category is required");
+        }
+        if (!Boolean(description)) {
+            throw new BadRequest("Description is required");
+        }
+        if (!Boolean(status)) {
+            throw new BadRequest("Status is required");
+        }
+        if (!Boolean(timeCommitment)) {
+            throw new BadRequest("Time commitment is required");
+        }
+        if (!Boolean(ageGroup1)) {
+            throw new BadRequest("ageGroup1 is required");
+        }
+        if (!Boolean(ageGroup2)) {
+            throw new BadRequest("ageGroup2 is required");
+        }
+        if (!Boolean(ngoName)) {
+            throw new BadRequest("NGO name is required");
+        }
+        if (!Boolean(registrationNumber)) {
+            throw new BadRequest("NGO registration number is required");
+        }
+        if (!Boolean(typeOfNGO)) {
+            throw new BadRequest("NGO type is required");
+        }
+        const voluntaryData = await Voluntary.findById(req.params.voluntaryId);
+        const ngoDetailData = await NGODetails.findById(voluntaryData.ngoDetailId);
+        ngoDetailData.ngoName = ngoName;
+        ngoDetailData.registrationNumber = registrationNumber;
+        ngoDetailData.typeOfNGO = typeOfNGO;
+        await ngoDetailData.save();
+
+        voluntaryData.title = title;
+        voluntaryData.description = description;
+        voluntaryData.category = category;
+        voluntaryData.status = status;
+        voluntaryData.timeCommitment = timeCommitment;
+        voluntaryData.ageGroup = [ageGroup1, ageGroup2];
+        await voluntaryData.save();
+        return res.status(200).json({message:"Successfully updated task data"});
+    } catch(err) {
+        next(err);
+    }
+});
+
 
 module.exports = router;
