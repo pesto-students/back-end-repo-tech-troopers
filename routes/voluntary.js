@@ -116,12 +116,26 @@ router.get('/', loginMiddleware, async (req, res, next) => {
         }
         let page = req.query.page;
         let limit = req.query.limit;
+        let filter = req.query.filter;
 
         if (!page) {
             page = 1;
         }
         if (!limit) {
             limit = 10;
+        }
+        if (filter) {
+            const voluntaryList = await Voluntary.find({category: filter})
+                .limit(limit * 1)
+                .skip((page - 1) * limit)
+                .populate("ngoDetailId")
+                .exec();
+            const totalCount = await Voluntary.countDocuments();
+            return res.status(200).json({
+                voluntaryList,
+                totalPages: Math.ceil(totalCount / limit),
+                currentPage: page,
+            });
         }
         const voluntaryList = await Voluntary.find()
             .limit(limit * 1)
