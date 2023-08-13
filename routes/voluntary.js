@@ -78,7 +78,7 @@ router.post("/admin", loginMiddleware, async (req, res, next) => {
     }
 });
 
-router.get('/admin', loginMiddleware, async(req, res, next)=>{
+router.get('/admin', loginMiddleware, async (req, res, next) => {
     try {
         if (req.user.role !== NGO_USER) {
             throw new BadRequest("You are not allowed");
@@ -96,51 +96,7 @@ router.get('/admin', loginMiddleware, async(req, res, next)=>{
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .populate("ngoDetailId")
-            .populate({ path:"insterestedUsers", select:"name email phoneNumber"})
-            .exec();
-        const totalCount = await Voluntary.countDocuments();
-        return res.status(200).json({
-            voluntaryList,
-            totalPages: Math.ceil(totalCount / limit),
-            currentPage: page,
-        });
-    } catch(err) {
-        next(err);
-    }
-});
-
-router.get('/', loginMiddleware, async (req, res, next) => {
-    try {
-        if (req.user.role !== USER) {
-            throw new BadRequest("You are not allowed");
-        }
-        let page = req.query.page;
-        let limit = req.query.limit;
-        let filter = req.query.filter;
-
-        if (!page) {
-            page = 1;
-        }
-        if (!limit) {
-            limit = 10;
-        }
-        if (filter) {
-            const voluntaryList = await Voluntary.find({category: filter})
-                .limit(limit * 1)
-                .skip((page - 1) * limit)
-                .populate("ngoDetailId")
-                .exec();
-            const totalCount = await Voluntary.countDocuments();
-            return res.status(200).json({
-                voluntaryList,
-                totalPages: Math.ceil(totalCount / limit),
-                currentPage: page,
-            });
-        }
-        const voluntaryList = await Voluntary.find()
-            .limit(limit * 1)
-            .skip((page - 1) * limit)
-            .populate("ngoDetailId")
+            .populate({ path: "insterestedUsers", select: "name email phoneNumber" })
             .exec();
         const totalCount = await Voluntary.countDocuments();
         return res.status(200).json({
@@ -153,7 +109,56 @@ router.get('/', loginMiddleware, async (req, res, next) => {
     }
 });
 
-router.put("/admin/:voluntaryId", loginMiddleware, async(req, res, next)=>{
+router.get('/', loginMiddleware, async (req, res, next) => {
+    try {
+        if (req.user.role !== USER) {
+            throw new BadRequest("You are not allowed");
+        }
+        let page = req.query.page;
+        let limit = req.query.limit;
+        let filter = req.query.filter;
+        let city = req.query.city;
+        if (!page) {
+            page = 1;
+        }
+        if (!limit) {
+            limit = 10;
+        }
+
+        if (filter) {
+            const voluntaryList = await Voluntary.find({ category: filter })
+                .limit(limit * 1)
+                .skip((page - 1) * limit)
+                .populate("ngoDetailId")
+                .exec();
+            const totalCount = await Voluntary.countDocuments();
+            return res.status(200).json({
+                voluntaryList,
+                totalPages: Math.ceil(totalCount / limit),
+                currentPage: page,
+            });
+        }
+        let voluntaryList = await Voluntary.find()
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
+            .populate("ngoDetailId")
+            .populate({ path: "userIdNGO", populate: { path: "address", select: "city" } })
+            .exec();
+        if (city) {
+            voluntaryList = voluntaryList.filter((val) => val.userIdNGO.address.city == city);
+        }
+        const totalCount = await Voluntary.countDocuments();
+        return res.status(200).json({
+            voluntaryList,
+            totalPages: Math.ceil(totalCount / limit),
+            currentPage: page,
+        });
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.put("/admin/:voluntaryId", loginMiddleware, async (req, res, next) => {
     try {
         const {
             title,
@@ -215,21 +220,21 @@ router.put("/admin/:voluntaryId", loginMiddleware, async(req, res, next)=>{
         voluntaryData.timeCommitment = timeCommitment;
         voluntaryData.ageGroup = [ageGroup1, ageGroup2];
         await voluntaryData.save();
-        return res.status(200).json({message:"Successfully updated task data"});
-    } catch(err) {
+        return res.status(200).json({ message: "Successfully updated task data" });
+    } catch (err) {
         next(err);
     }
 });
 
-router.patch("/add/:voluntaryId", loginMiddleware, async(req, res, next)=>{
-    try{
+router.patch("/add/:voluntaryId", loginMiddleware, async (req, res, next) => {
+    try {
         if (req.user.role !== USER) {
             throw new BadRequest("You are not allowed");
         }
-        await Voluntary.findByIdAndUpdate(req.params.voluntaryId,{ $push: {insterestedUsers: req.user._id}});
-        await User.findByIdAndUpdate(req.user._id, { $push: {voluntary:req.params.voluntaryId}});
-        return res.status(201).json({message: "Successfully recored your interest."})
-    } catch(err){
+        await Voluntary.findByIdAndUpdate(req.params.voluntaryId, { $push: { insterestedUsers: req.user._id } });
+        await User.findByIdAndUpdate(req.user._id, { $push: { voluntary: req.params.voluntaryId } });
+        return res.status(201).json({ message: "Successfully recored your interest." })
+    } catch (err) {
         next(err);
     }
 });
@@ -239,7 +244,7 @@ router.patch("/remove/:voluntaryId", loginMiddleware, async (req, res, next) => 
         if (req.user.role !== USER) {
             throw new BadRequest("You are not allowed");
         }
-        await Voluntary.findByIdAndUpdate(req.params.voluntaryId, { $pull: { insterestedUsers: req.user._id }});
+        await Voluntary.findByIdAndUpdate(req.params.voluntaryId, { $pull: { insterestedUsers: req.user._id } });
         await User.findByIdAndUpdate(req.user._id, { $pull: { voluntary: req.params.voluntaryId } });
         return res.status(201).json({ message: "Successfully removed your interest." })
     } catch (err) {
@@ -247,7 +252,7 @@ router.patch("/remove/:voluntaryId", loginMiddleware, async (req, res, next) => 
     }
 });
 
-router.delete("/admin/:voluntaryId", loginMiddleware, async(req, res, next)=>{
+router.delete("/admin/:voluntaryId", loginMiddleware, async (req, res, next) => {
     try {
         if (req.user.role !== NGO_USER) {
             throw new BadRequest("You are not allowed");
@@ -255,7 +260,7 @@ router.delete("/admin/:voluntaryId", loginMiddleware, async(req, res, next)=>{
         await Voluntary.findByIdAndDelete(req.params.voluntaryId);
         await User.findByIdAndUpdate(req.user._id, { $pull: { voluntary: req.params.voluntaryId } });
         return res.status(200).json("Task deleted successfully");
-    } catch(err) {
+    } catch (err) {
         next(err);
     }
 })
