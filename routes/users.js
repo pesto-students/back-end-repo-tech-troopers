@@ -21,9 +21,6 @@ router.post("/", async (req, res, next) => {
         if (user) {
             throw new BadRequest("User already exits");
         }
-        if (password !== confirmPassword) {
-            throw new BadRequest("Password do not match");
-        }
         if (address) {
             const { addressLine1, city, state, pinCode } = address;
 
