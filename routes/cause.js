@@ -88,9 +88,9 @@ router.get("/admin", loginMiddleware, async (req, res, next) => {
 
 router.get("/", loginMiddleware, async (req, res, next) => {
     try {
-        if (req.user.role !== USER ) {
-            throw new BadRequest("You are not allowed");
-        }
+        // if (req.user.role !== USER ) {
+        //     throw new BadRequest("You are not allowed");
+        // }
         let page = req.query.page;
         let limit = req.query.limit;
 
