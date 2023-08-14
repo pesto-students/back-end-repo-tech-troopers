@@ -85,8 +85,8 @@ router.patch("/:userId", async (req, res, next) => {
             if (checkForInvalid(addressLine1) || checkForInvalid(city) || checkForInvalid(state) || checkForInvalid(pinCode)) {
                 throw new BadRequest("Invalid address details.");
             }
-            const updatedAddress = await Address.findByIdAndUpdate(user.address, address, { new: true });
-            user.address = new Address({ ...address });
+            const newAddress = await Address.create(address);
+            user.address = newAddress._id;
         }
 
         // Update NGO details if provided
@@ -95,12 +95,12 @@ router.patch("/:userId", async (req, res, next) => {
             if (checkForInvalid(ngoName) || checkForInvalid(registrationNumber) || checkForInvalid(typeOfNGO)) {
                 throw new BadRequest("Invalid NGO details.");
             }
-            user.ngoDetails = new NGODetails({
-                ...ngoDetails
-            });
+            const newAddress = await Address.create(address);
+            user.address = newAddress._id;
         }
 
         const updatedUser = await user.save();
+        await updatedUser.populate("address").populate("ngoDetails");
         return res.status(200).json(updatedUser);
     } catch (err) {
         next(err);

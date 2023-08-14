@@ -109,6 +109,7 @@ router.get("/:userId", async (req, res) => {
     try {
         let { page, limit } = req.query;
         const { userId } = req.params;
+        let resourceList;
 
         if (!page) {
             page = 1;
@@ -133,12 +134,10 @@ router.get("/:userId", async (req, res) => {
     }
 })
 
-router.get("/", loginMiddleware, async (req, res) => {
+router.get("/", async (req, res) => {
     try {
-        let page = req.query.page;
-        let limit = req.query.limit;
-        let search = req.query.search;
-        let filter = req.query.filter;
+        let { page, limit, search, filter, city } = req.query;
+        let resourceList;
         if (!page) {
             page = 1;
         }
@@ -146,36 +145,30 @@ router.get("/", loginMiddleware, async (req, res) => {
             limit = 10;
         }
         if (search) {
-            const resourceList = await Resource.find({ $text: { $search: search } })
+            resourceList = await Resource.find({ $text: { $search: search }, status: { $in: ["ACTIVE", "APPROVED"] } })
                 .limit(limit * 1)
                 .skip((page - 1) * limit)
                 .populate("address")
                 .exec();
-            const totalCount = await Resource.countDocuments();
-            return res.status(200).json({
-                resourceList,
-                totalPages: Math.ceil(totalCount / limit),
-                currentPage: page,
-            });
+
         }
-        if (filter) {
-            const resourceList = await Resource.find({ category: filter })
+        else if (filter) {
+            resourceList = await Resource.find({ category: filter, status: { $in: ["ACTIVE", "APPROVED"] } })
                 .limit(limit * 1)
                 .skip((page - 1) * limit)
                 .populate("address")
                 .exec();
-            const totalCount = await Resource.countDocuments();
-            return res.status(200).json({
-                resourceList,
-                totalPages: Math.ceil(totalCount / limit),
-                currentPage: page,
-            });
+
+        } else {
+            resourceList = await Resource.find({ status: { $in: ["ACTIVE", "APPROVED"] } })
+                .limit(limit * 1)
+                .skip((page - 1) * limit)
+                .populate("address")
+                .exec();
         }
-        const resourceList = await Resource.find({ status: ACTIVE })
-            .limit(limit * 1)
-            .skip((page - 1) * limit)
-            .populate("address")
-            .exec();
+        resourceList = resourceList.filter(resource => {
+            return resource.address.city.toLowerCase() === city.toLowerCase();
+        });
         const totalCount = await Resource.countDocuments();
 
         return res.status(200).json({
@@ -368,5 +361,31 @@ router.delete("/:resourceId", loginMiddleware, async (req, res) => {
         console.log(err);
     }
 })
+
+router.patch('/update-resource-status/:resourceId/:userId', async (req, res, next) => {
+    const { resourceId, userId } = req.params;
+    try {
+        const resource = await Resource.findById(resourceId);
+        if (!resource) {
+            throw new BadRequest('Resource not found.');
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new BadRequest('User not found.');
+        }
+
+        resource.status = resource.status === 'APPROVED' ? 'ACTIVE' : 'APPROVED'; // Replace with the new status
+        user.resources.push(resourceId);
+
+        await resource.save();
+        await user.save();
+
+
+        return res.status(200).json({ message: 'Resource status updated successfully.' });
+    } catch (err) {
+        next(err);
+    }
+});
 
 module.exports = router;
