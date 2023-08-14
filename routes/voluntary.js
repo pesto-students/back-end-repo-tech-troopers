@@ -12,13 +12,8 @@ router.post("/admin", loginMiddleware, async (req, res, next) => {
             title,
             category,
             description,
-            status,
             timeCommitment,
-            ageGroup1,
-            ageGroup2,
-            ngoName,
-            registrationNumber,
-            typeOfNGO,
+            ageGroup
         } = req.body;
 
         if (req.user.role !== NGO_USER) {
@@ -33,46 +28,26 @@ router.post("/admin", loginMiddleware, async (req, res, next) => {
         if (!Boolean(description)) {
             throw new BadRequest("Description is required");
         }
-        if (!Boolean(status)) {
-            throw new BadRequest("Status is required");
-        }
         if (!Boolean(timeCommitment)) {
             throw new BadRequest("Time commitment is required");
         }
-        if (!Boolean(ageGroup1)) {
-            throw new BadRequest("ageGroup1 is required");
+        if (!Boolean(ageGroup)) {
+            throw new BadRequest("ageGroup is required");
         }
-        if (!Boolean(ageGroup2)) {
-            throw new BadRequest("ageGroup2 is required");
-        }
-        if (!Boolean(ngoName)) {
-            throw new BadRequest("NGO name is required");
-        }
-        if (!Boolean(registrationNumber)) {
-            throw new BadRequest("NGO registration number is required");
-        }
-        if (!Boolean(typeOfNGO)) {
-            throw new BadRequest("NGO type is required");
-        }
-        const newNgoDetail = {
-            ngoName,
-            registrationNumber,
-            typeOfNGO
-        }
-        const ngoDetailData = await NGODetails.create(newNgoDetail);
+        const ngoUser = await User.findById(req.user._id);
         const newVoluntary = {
             title,
             category,
             description,
-            status: status,
+            status: "ACTIVE",
             timeCommitment,
-            ageGroup: [ageGroup1, ageGroup2],
-            ngoDetailId: ngoDetailData._id,
+            ageGroup:,
+            ngoDetailId: ngoUser.ngoDetails,
             userIdNGO: req.user._id
         }
         const voluntaryData = await Voluntary.create(newVoluntary);
         await User.findByIdAndUpdate(req.user._id, { $push: { voluntary: voluntaryData._id } });
-        return res.status(201).json(newVoluntary);
+        return res.status(201).json({ newVoluntary, message: "successful" });
     } catch (err) {
         next(err);
     }
@@ -96,7 +71,7 @@ router.get('/admin', loginMiddleware, async (req, res, next) => {
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .populate("ngoDetailId")
-            .populate({ path: "insterestedUsers", select: "name email phoneNumber" })
+            .populate({ path: "interestedUsers", select: "name email phoneNumber" })
             .exec();
         const totalCount = await Voluntary.countDocuments();
         return res.status(200).json({
@@ -231,7 +206,7 @@ router.patch("/add/:voluntaryId", loginMiddleware, async (req, res, next) => {
         if (req.user.role !== USER) {
             throw new BadRequest("You are not allowed");
         }
-        await Voluntary.findByIdAndUpdate(req.params.voluntaryId, { $push: { insterestedUsers: req.user._id } });
+        await Voluntary.findByIdAndUpdate(req.params.voluntaryId, { $push: { interestedUsers: req.user._id } });
         await User.findByIdAndUpdate(req.user._id, { $push: { voluntary: req.params.voluntaryId } });
         return res.status(201).json({ message: "Successfully recored your interest." })
     } catch (err) {
@@ -244,7 +219,7 @@ router.patch("/remove/:voluntaryId", loginMiddleware, async (req, res, next) => 
         if (req.user.role !== USER) {
             throw new BadRequest("You are not allowed");
         }
-        await Voluntary.findByIdAndUpdate(req.params.voluntaryId, { $pull: { insterestedUsers: req.user._id } });
+        await Voluntary.findByIdAndUpdate(req.params.voluntaryId, { $pull: { interestedUsers: req.user._id } });
         await User.findByIdAndUpdate(req.user._id, { $pull: { voluntary: req.params.voluntaryId } });
         return res.status(201).json({ message: "Successfully removed your interest." })
     } catch (err) {

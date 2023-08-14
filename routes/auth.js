@@ -11,7 +11,12 @@ require("dotenv").config();
 router.post("/", async (req, res, next) => {
     const { email, password } = req.body;
     try {
-        let user = await User.findOne({ email }).populate("address");
+        let user = await User.findOne({ email });
+        if (user.role === 'NGO_USER') {
+            user.populate("address");
+            user.populate("ngoDetails");
+            console.log(user)
+        }
         if (!user) {
             throw new BadRequest("You are not signed up");
         }
@@ -19,13 +24,15 @@ router.post("/", async (req, res, next) => {
         if (!isMatch) {
             throw new BadRequest("Password is wrong");
         }
+        const userInfo = { ...user.toObject() };
+        delete userInfo.password
         user = { ...user._doc };
         delete user["password"]
         const payload = { user };
         const token = await jwt.sign(payload, process.env.JWTSECRET, {
             expiresIn: 36000,
         });
-        return res.status(200).json({ userInfo: user, token });
+        return res.status(200).json({ userInfo, token });
     } catch (err) {
         next(err);
     }

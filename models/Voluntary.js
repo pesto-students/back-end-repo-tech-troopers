@@ -25,7 +25,7 @@ const VoluntarySchema = new mongoose.Schema({
         type: Number,
         required: false
     }],
-    insterestedUsers: [{
+    interestedUsers: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "user",
         required: false
