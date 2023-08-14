@@ -109,7 +109,6 @@ router.get("/:userId", async (req, res) => {
     try {
         let { page, limit } = req.query;
         const { userId } = req.params;
-        let resourceList;
 
         if (!page) {
             page = 1;

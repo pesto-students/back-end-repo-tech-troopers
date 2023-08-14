@@ -41,7 +41,7 @@ router.post("/admin", loginMiddleware, async (req, res, next) => {
             description,
             status: "ACTIVE",
             timeCommitment,
-            ageGroup:,
+            ageGroup,
             ngoDetailId: ngoUser.ngoDetails,
             userIdNGO: req.user._id
         }

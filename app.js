@@ -12,6 +12,7 @@ const resourceRouter =  require("./routes/resource");
 const causeRouter = require("./routes/cause");
 const eventRouter =  require("./routes/event");
 const voluntaryRouter =  require("./routes/voluntary");
+const paymentRouter = require("./routes/payment");
 
 var app = express();
 const port = process.env.PORT || 8000;
@@ -23,13 +24,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 // app.use(express.static("client/build"));
-
+app.use(express.static("public"))
 app.use("/api/users", usersRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/resource", resourceRouter);
 app.use("/api/cause", causeRouter);
 app.use("/api/event", eventRouter);
 app.use("/api/voluntary", voluntaryRouter);
+app.use("/api/payment", paymentRouter);
 
 // serve static assests in production
 if (process.env.NODE_ENV === "production") {
