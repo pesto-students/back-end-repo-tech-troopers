@@ -97,7 +97,8 @@ router.patch("/:userId", async (req, res, next) => {
         }
 
         const updatedUser = await user.save();
-        await updatedUser.populate("address").populate("ngoDetails");
+        await updatedUser.populate("address")
+        await updatedUser.populate("ngoDetails");
         return res.status(200).json(updatedUser);
     } catch (err) {
         next(err);
