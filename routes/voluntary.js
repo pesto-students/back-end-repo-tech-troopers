@@ -139,13 +139,8 @@ router.put("/admin/:voluntaryId", loginMiddleware, async (req, res, next) => {
             title,
             category,
             description,
-            status,
             timeCommitment,
-            ageGroup1,
-            ageGroup2,
-            ngoName,
-            registrationNumber,
-            typeOfNGO,
+            ageGroup
         } = req.body;
 
         if (req.user.role !== NGO_USER) {
@@ -160,40 +155,19 @@ router.put("/admin/:voluntaryId", loginMiddleware, async (req, res, next) => {
         if (!Boolean(description)) {
             throw new BadRequest("Description is required");
         }
-        if (!Boolean(status)) {
-            throw new BadRequest("Status is required");
-        }
         if (!Boolean(timeCommitment)) {
             throw new BadRequest("Time commitment is required");
         }
-        if (!Boolean(ageGroup1)) {
-            throw new BadRequest("ageGroup1 is required");
-        }
-        if (!Boolean(ageGroup2)) {
-            throw new BadRequest("ageGroup2 is required");
-        }
-        if (!Boolean(ngoName)) {
-            throw new BadRequest("NGO name is required");
-        }
-        if (!Boolean(registrationNumber)) {
-            throw new BadRequest("NGO registration number is required");
-        }
-        if (!Boolean(typeOfNGO)) {
-            throw new BadRequest("NGO type is required");
+        if (!Boolean(ageGroup)) {
+            throw new BadRequest("ageGroup is required");
         }
         const voluntaryData = await Voluntary.findById(req.params.voluntaryId);
-        const ngoDetailData = await NGODetails.findById(voluntaryData.ngoDetailId);
-        ngoDetailData.ngoName = ngoName;
-        ngoDetailData.registrationNumber = registrationNumber;
-        ngoDetailData.typeOfNGO = typeOfNGO;
-        await ngoDetailData.save();
 
         voluntaryData.title = title;
         voluntaryData.description = description;
         voluntaryData.category = category;
-        voluntaryData.status = status;
         voluntaryData.timeCommitment = timeCommitment;
-        voluntaryData.ageGroup = [ageGroup1, ageGroup2];
+        voluntaryData.ageGroup = ageGroup;
         await voluntaryData.save();
         return res.status(200).json({ message: "Successfully updated task data" });
     } catch (err) {
