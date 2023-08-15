@@ -333,8 +333,8 @@ router.post(
     async (req, res) => {
         try {
             console.log("tst", req.files[0].path);
-            await saveImage(req.files[0].path)
-            return res.status(201).json({ message: "Image uploaded successfully" });
+            const url = await saveImage(req.files[0].path)
+            return res.status(201).json({ message: "Image uploaded successfully", url });
         } catch (err) {
             console.log(err);
         }
