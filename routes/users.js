@@ -7,6 +7,7 @@ const User = require("../models/Users");
 const Address = require("../models/Address");
 const NGODetails = require("../models/NGODetails");
 const loginMiddleware = require('../middlewares/auth');
+const {checkForInvalid, phoneNumberValidation} = require("../utils/util");
 require("dotenv").config();
 /* GET users listing. */
 router.get("/", loginMiddleware,async function (req, res, next) {
@@ -21,7 +22,7 @@ router.get("/", loginMiddleware,async function (req, res, next) {
 
 //Register users
 router.post("/", async (req, res, next) => {
-    const { email, password, confirmPassword, name, role, address } = req.body;
+    const { email, password, confirmPassword, name, role, address, phoneNumber } = req.body;
     try {
         let user = await User.findOne({ email });
         if (user) {
@@ -47,6 +48,9 @@ router.post("/", async (req, res, next) => {
                 if (checkForInvalid(pinCode)) {
                     throw new BadRequest(`Pincode is required.`)
                 }
+                if (!phoneNumberValidation(phoneNumber)) {
+                    throw new BadRequest('Enter valid phone number')
+                }
             }
         }
         user = new User({
@@ -54,6 +58,7 @@ router.post("/", async (req, res, next) => {
             password,
             name,
             role,
+            phoneNumber
         });
         // const savedAddress = await Address.create(address);
         const salt = bcrypt.genSaltSync(10);
@@ -111,7 +116,4 @@ router.patch("/:userId", async (req, res, next) => {
     }
 });
 
-const checkForInvalid = (val) => {
-    return Boolean(val) ? false : true;
-}
 module.exports = router;
