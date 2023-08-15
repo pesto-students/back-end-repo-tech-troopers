@@ -332,7 +332,6 @@ router.post(
     upload.array("image"),
     async (req, res) => {
         try {
-            console.log("tst", req.files[0].path);
             const url = await saveImage(req.files[0].path)
             return res.status(201).json({ message: "Image uploaded successfully", url });
         } catch (err) {
@@ -342,18 +341,16 @@ router.post(
 );
 router.delete("/:resourceId", loginMiddleware, async (req, res) => {
     try {
-        console.log(req.user);
         if (req.user.role !== USER) {
             throw new BadRequest("Not allowed to delete");
         }
         const resource = await Resource.findById(req.params.resourceId);
-        console.log(resource);
         if (resource.status === 'APPROVED') {
             throw new BadRequest("Not allowed to delete");
 
         }
 
-        await Resource.findByIdAndUpdate(req.params.resourceId, { status: IN_ACTIVE });
+        await Resource.findByIdAndDelete(req.params.resourceId);
         await User.findByIdAndUpdate(req.user._id, { $pull: { "resources": req.params.resourceId } });
         return res.status(200).json("Resource deleted successfully");
     } catch (err) {
