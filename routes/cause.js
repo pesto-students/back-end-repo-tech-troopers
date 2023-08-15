@@ -22,7 +22,7 @@ router.post('/admin', loginMiddleware, async (req, res, next) => {
             name,
             description,
             amount,
-            imagePath,
+            imageURl,
         } = req.body;
 
         if (req.user.role !== NGO_USER) {
@@ -39,7 +39,7 @@ router.post('/admin', loginMiddleware, async (req, res, next) => {
         }
 
         
-        const imageURL = imagePath ? await saveImage(imagePath) : null;
+        // const imageURL = imagePath ? await saveImage(imagePath) : null;
         const newCause = {
             name,
             description,
@@ -121,7 +121,7 @@ router.put("/admin/:causeId", loginMiddleware, async (req, res, next) => {
             name,
             description,
             amount,
-            imagePath
+            imageURL
         } = req.body;
 
         if (req.user.role !== NGO_USER) {
@@ -145,9 +145,10 @@ router.put("/admin/:causeId", loginMiddleware, async (req, res, next) => {
         causeData.name = name;
         causeData.description = description;
         causeData.amount = amount;
-        if (imagePath) {
-            causeData.imageURL = await saveImage(imagePath);
-        }
+        causeData.imageURL = imageURL;
+        // if (imagePath) {
+        //     causeData.imageURL = await saveImage(imagePath);
+        // }
         await causeData.save(); 
 
         return res.status(200).json({ message: "Successfully update a cause" });
