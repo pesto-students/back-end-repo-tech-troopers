@@ -98,8 +98,8 @@ router.patch("/:userId", async (req, res, next) => {
             if (checkForInvalid(ngoName) || checkForInvalid(registrationNumber) || checkForInvalid(typeOfNGO)) {
                 throw new BadRequest("Invalid NGO details.");
             }
-            const newAddress = await Address.create(address);
-            user.address = newAddress._id;
+            const ngoDetailData = await NGODetails.create(ngoDetails);
+            user.ngoDetails = ngoDetailData._id;
         }
 
         const updatedUser = await user.save();
