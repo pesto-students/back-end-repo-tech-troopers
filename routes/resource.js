@@ -15,7 +15,7 @@ const multer = require("multer");
 require("dotenv").config();
 
 const upload = multer({ dest: "uploads/" });
-const { ACTIVE, USER, IN_ACTIVE } = require("../utils/constants");
+const { ACTIVE, USER, IN_ACTIVE, APPROVED } = require("../utils/constants");
 router.post("/", loginMiddleware, async (req, res, next) => {
     try {
         const {
@@ -116,7 +116,7 @@ router.get("/:userId", async (req, res) => {
         if (!limit) {
             limit = 10;
         }
-        const resourceList = await Resource.find({ status: ACTIVE, userId })
+        const resourceList = await Resource.find({ status: { $in: [ACTIVE, APPROVED ]}, userId })
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .populate("address")

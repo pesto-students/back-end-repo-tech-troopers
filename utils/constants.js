@@ -2,6 +2,7 @@ const ACTIVE = "ACTIVE";
 const USER = "USER";
 const IN_ACTIVE = "IN_ACTIVE";
 const NGO_USER = "NGO_USER";
-const ACCEPTED = "ACCEPTED"
+const ACCEPTED = "ACCEPTED";
+const APPROVED = "APPROVED"
 
-module.exports = { ACTIVE, USER, IN_ACTIVE, NGO_USER, ACCEPTED }
+module.exports = { ACTIVE, USER, IN_ACTIVE, NGO_USER, ACCEPTED, APPROVED }
