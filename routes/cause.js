@@ -22,7 +22,7 @@ router.post('/admin', loginMiddleware, async (req, res, next) => {
             name,
             description,
             amount,
-            imageURl,
+            imageURL,
         } = req.body;
 
         if (req.user.role !== NGO_USER) {
