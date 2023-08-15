@@ -6,10 +6,16 @@ const { BadRequest } = require("../utils/errors");
 const User = require("../models/Users");
 const Address = require("../models/Address");
 const NGODetails = require("../models/NGODetails");
+const loginMiddleware = require('../middlewares/auth');
 require("dotenv").config();
 /* GET users listing. */
-router.get("/", function (req, res, next) {
-    res.send("respond with a resource");
+router.get("/", loginMiddleware,async function (req, res, next) {
+    try {
+        const user = await User.findById(req.user._id).select("-password");
+        return res.status(200).json(user);
+    } catch (err) {
+        next(err);
+    }
 });
 
 
