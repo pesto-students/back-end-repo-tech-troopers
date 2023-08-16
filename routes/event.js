@@ -29,6 +29,7 @@ router.get("/:eventId", loginMiddleware, async (req, res, next) => {
         next(err);
     }
 });
+
 router.post('/admin', loginMiddleware, async (req, res, next) => {
     try {
         const {

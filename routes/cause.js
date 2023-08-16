@@ -16,6 +16,22 @@ const upload = multer({ dest: "uploads/" });
 
 const { ACTIVE, IN_ACTIVE, NGO_USER, USER } = require("../utils/constants");
 
+router.get("/:causeId", loginMiddleware, async (req, res, next) => {
+    try {
+        // if (req.user.role !== USER ) {
+        //     throw new BadRequest("You are not allowed");
+        // }
+       
+        const causeData = await Cause.findById(req.params.causeId)
+            .exec();
+        return res.status(200).json({
+            causeData,
+        });
+    } catch (err) {
+        next(err);
+    }
+});
+
 router.post('/admin', loginMiddleware, async (req, res, next) => {
     try {
         const {
