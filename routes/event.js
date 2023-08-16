@@ -73,10 +73,10 @@ router.post('/admin', loginMiddleware, async (req, res, next) => {
             }
         }
         const savedAddress = await Address.create(address);
-        let imageURL = null;
-        if (imagePath) {
-            imageURL = await saveImage(imagePath);
-        }
+        // let imageURL = null;
+        // if (imagePath) {
+        //     imageURL = await saveImage(imagePath);
+        // }
         const newEvent = {
             title,
             description,
@@ -86,7 +86,7 @@ router.post('/admin', loginMiddleware, async (req, res, next) => {
             date: new Date(date),
             address: savedAddress._id,
             userId: req.user._id,
-            imageURL: imageURL
+            imageURL: imagePath
         }
         const savedEvent = await Event.create(newEvent);
         await User.findByIdAndUpdate(req.user._id, {
